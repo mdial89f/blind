@@ -1,0 +1,60 @@
+name: Annotate PR
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  actions: read
+  pull-requests: write
+
+jobs:
+  find-deploy-artifact:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Find latest Deploy workflow run
+        id: find_deploy_run
+        run: |
+          BRANCH=${{ github.head_ref }}
+          RUN_ID=$(gh run list --branch $BRANCH --workflow Deploy --json databaseId --jq '.[0].databaseId')
+          echo "::set-output name=RUN_ID::$RUN_ID"
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: app-url
+          run-id: ${{ steps.find_deploy_run.outputs.RUN_ID }}
+
+      - name: Extract and read artifact
+        id: read_artifact
+        run: |
+          ARTIFACT_FILE=$(find artifacts -name 'app-url*' -print -quit)
+          if [ -z "$ARTIFACT_FILE" ]; then
+            echo "No 'app-url' artifact found."
+            exit 1
+          fi
+          if [[ $ARTIFACT_FILE == *.zip ]]; then
+            unzip $ARTIFACT_FILE -d artifacts
+            ARTIFACT_FILE=$(find artifacts -name 'app-url*' -print -quit)
+          fi
+          APP_URL=$(cat "$ARTIFACT_FILE")
+          echo "::set-output name=APP_URL::$APP_URL"
+
+      - name: Comment on PR
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const appUrl = '${{ steps.read_artifact.outputs.APP_URL }}';
+            const prNumber = context.payload.pull_request.number;
+            const comment = `**Application URL:** ${appUrl}`;
+            await github.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              body: comment
+            });
