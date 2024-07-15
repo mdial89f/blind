@@ -96,11 +96,13 @@ jobs:
       - name: Display App URL
         run: |
           echo "App URL: ${{ needs.deploy.outputs.app-url }}"
+      - name: Write url to file
+        run: echo "${{ needs.deploy.outputs.app-url }}" > app-url.txt
       - name: Upload App URL Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: app-url
-          path: ${{ needs.deploy.outputs.app-url }}
+          path: app-url.txt
 
   kibana-url:
     runs-on: ubuntu-20.04
