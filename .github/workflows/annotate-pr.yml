@@ -21,7 +21,7 @@ jobs:
         id: find_deploy_run
         run: |
           set -x
-          RUN_ID=$(gh run list --branch "${{ github.head_ref }}" --workflow Deploy --json databaseId --jq '.[0].databaseId')
+          RUN_ID=$(gh run list --branch "${{ github.head_ref }}" --workflow Deploy --status completed --json databaseId --jq '.[0].databaseId')
           echo "::set-output name=RUN_ID::$RUN_ID"
         env:
           GH_TOKEN: ${{ github.token }}
