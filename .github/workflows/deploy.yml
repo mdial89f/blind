@@ -96,6 +96,11 @@ jobs:
       - name: Display App URL
         run: |
           echo "App URL: ${{ needs.deploy.outputs.app-url }}"
+      - name: Upload App URL Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: app-url
+          path: ${{ needs.deploy.outputs.app-url }}
 
   kibana-url:
     runs-on: ubuntu-20.04
