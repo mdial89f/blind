@@ -6,14 +6,11 @@ on:
   push:
     branches: ["dude"]
 
-<<<<<<< Updated upstream
-=======
 permissions:
   id-token: write
   actions: read
   pull-requests: write
 
->>>>>>> Stashed changes
 jobs:
   find-deploy-artifact:
     runs-on: ubuntu-latest
