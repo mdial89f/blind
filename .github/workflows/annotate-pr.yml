@@ -22,8 +22,8 @@ jobs:
       - name: Find latest Deploy workflow run
         id: find_deploy_run
         run: |
-          BRANCH=${{ github.head_ref }}
-          RUN_ID=$(gh run list --branch $BRANCH --workflow Deploy --json databaseId --jq '.[0].databaseId')
+          set -x
+          RUN_ID=$(gh run list --branch "${{ github.head_ref }}" --workflow Deploy --json databaseId --jq '.[0].databaseId')
           echo "::set-output name=RUN_ID::$RUN_ID"
 
       - uses: actions/download-artifact@v4
